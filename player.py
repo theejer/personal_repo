@@ -13,6 +13,7 @@ class Player(pygame.sprite.Sprite):
         self.gravity = 0.8
         self.jump_speed = -12
         self.jumps = 2
+        self.on_wall = False
 
     def move(self):
         keys = pygame.key.get_pressed()
@@ -34,3 +35,12 @@ class Player(pygame.sprite.Sprite):
         if keys[pygame.K_SPACE] and self.direction.y >= 0 and self.jumps > 0:
             self.direction.y = self.jump_speed
             self.jumps -= 1
+
+    def wall_hold(self):
+        keys = pygame.key.get_pressed()
+        # Only cling if we are actualy touching a wall AND falling
+        if (self.on_wall) and keys[pygame.K_SPACE] and self.direction.y > 0:
+            self.gravity = 0.05
+            self.direction.x = 0
+        else:
+            self.gravity = 0.8
