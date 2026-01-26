@@ -1,9 +1,10 @@
+from settings import SCREEN_WIDTH
 from settings import SCREEN_HEIGHT
 import pygame 
 from settings import *
 from player import Player
 from camera import CameraGroup
-from object import CollisionObject
+from objects import CollisionObject, Message
 
 
 
@@ -16,6 +17,7 @@ class Level:
         self.camera_group = CameraGroup()
         self.tilesheet = tilesheet
         self.setup_level()
+        self.message = Message("", pygame.font.SysFont(None, 128), (255, 0, 0), (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
         
     def setup_level(self):
         
@@ -24,10 +26,12 @@ class Level:
         self.collision_sprites = pygame.sprite.Group()
 
         # Reading Tilesheet
-        OBJECT_LENGTH = 16
-        OBJECT_HEIGHT = 16
         x_axis = 0
         y_axis = 0
+
+        player_pos = ()
+        player_falling = True
+
         for row in self.tilesheet:
             x_axis = 0
             for tile in row:
@@ -35,11 +39,22 @@ class Level:
                     object = CollisionObject(OBJECT_LENGTH, OBJECT_HEIGHT, x_axis, y_axis)
                     self.camera_group.add(object)
                     self.collision_sprites.add(object)
+                    if player_pos:
+                        if player_pos[0] == x_axis:
+                            player_falling = False
                 elif tile == "P":
                     self.player = Player((x_axis, y_axis))
                     self.camera_group.add(self.player)
+                    player_pos = (x_axis, y_axis)
+                
                 x_axis += OBJECT_LENGTH
             y_axis += OBJECT_HEIGHT
+
+        if not player_pos:
+            player_pos = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
+        elif player_falling:
+            self.message = Message("PLAYER NOT SET PROPERLY", pygame.font.SysFont(None, 128), (255, 0, 0), (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
+
             
 
     def horizontal_collision(self):
@@ -97,3 +112,4 @@ class Level:
         # 3. Draw
         self.display_surface.fill('black')
         self.camera_group.custom_draw(self.player)
+        self.display_surface.blit(self.message.image, self.message.rect.topleft)
