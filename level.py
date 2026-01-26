@@ -3,46 +3,44 @@ import pygame
 from settings import *
 from player import Player
 from camera import CameraGroup
+from object import CollisionObject
 
-class Wall(pygame.sprite.Sprite):
-    def __init__(self, length, height, color='gray'):
-        super().__init__()
-        self.image = pygame.Surface((length, height))
-        self.image.fill(color)
-        self.rect = self.image.get_rect(topleft=(0, SCREEN_HEIGHT - height))
 
 
 class Level:
-    def __init__(self):
+    def __init__(self, tilesheet):
         # Get the display surface
         self.display_surface = pygame.display.get_surface()
         
         # Sprite groups - CHAANGE: Use our new CameraGroup
         self.camera_group = CameraGroup()
+        self.tilesheet = tilesheet
         self.setup_level()
         
     def setup_level(self):
-        self.player = Player((SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
-        self.camera_group.add(self.player)
+        
         
         # Collision Sprites Group
         self.collision_sprites = pygame.sprite.Group()
 
-        # Floor
-        self.floor = Wall(2000, 64)
-        self.camera_group.add(self.floor)
-        self.collision_sprites.add(self.floor)
-
-        # Tall Wall
-        self.wall = Wall(64, 1000)
-        self.camera_group.add(self.wall)
-        self.collision_sprites.add(self.wall)
-        
-        # Floating Platform
-        platform = Wall(300, 32, 'green')
-        platform.rect.topleft = (500, 500)
-        self.camera_group.add(platform)
-        self.collision_sprites.add(platform)
+        # Reading Tilesheet
+        OBJECT_LENGTH = 16
+        OBJECT_HEIGHT = 16
+        x_axis = 0
+        y_axis = 0
+        for row in self.tilesheet:
+            x_axis = 0
+            for tile in row:
+                if tile == "X":
+                    object = CollisionObject(OBJECT_LENGTH, OBJECT_HEIGHT, x_axis, y_axis)
+                    self.camera_group.add(object)
+                    self.collision_sprites.add(object)
+                elif tile == "P":
+                    self.player = Player((x_axis, y_axis))
+                    self.camera_group.add(self.player)
+                x_axis += OBJECT_LENGTH
+            y_axis += OBJECT_HEIGHT
+            
 
     def horizontal_collision(self):
         self.player.move()

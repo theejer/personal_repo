@@ -1,6 +1,7 @@
 import pygame
 from settings import *
 from level import Level
+from level1 import tilesheet
 
 # Setup
 pygame.init()
@@ -8,7 +9,7 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Side Scroller")
 clock = pygame.time.Clock()
 
-level = Level()
+level = Level(tilesheet)
 
 running = True
 while running:
