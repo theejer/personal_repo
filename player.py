@@ -1,22 +1,18 @@
 import pygame
+from entity import Entity
 
-class Player(pygame.sprite.Sprite):
-    def __init__(self, pos):
-        super().__init__()
+class Player(Entity):
+    def __init__(self, name, pos):
+        super().__init__(name, pos)
         self.width = 32
         self.height = 64
         self.image = pygame.Surface((self.width, self.height))
         self.image.fill('red')
         self.rect = self.image.get_rect(topleft=pos)
-        
-        # Movement logic
-        self.direction = pygame.math.Vector2(0, 0)
-        self.speed = 8
-        self.gravity = 0.8
-        self.jump_speed = -12
         self.jumps = 2
         self.on_wall = False
 
+    # Override
     def move(self):
         keys = pygame.key.get_pressed()
         if keys[pygame.K_RIGHT]:
@@ -28,10 +24,7 @@ class Player(pygame.sprite.Sprite):
             
         self.rect.x += self.direction.x * self.speed
 
-    def apply_gravity(self):
-        self.direction.y += self.gravity
-        self.rect.y += self.direction.y
-
+    # Override
     def jump(self):
         keys = pygame.key.get_just_pressed()
         if keys[pygame.K_SPACE] and self.direction.y >= 0 and self.jumps > 0:

@@ -20,14 +20,11 @@ class Level:
         self.platform_group = pygame.sprite.Group()
 
         self.tilesheet = tilesheet
-        self.setup_level()
-        self.physics_manager = PhysicsManager(self.player, self.collision_group, self.platform_group)
+        self.physics_manager = PhysicsManager(self.collision_group, self.platform_group)
         self.message = Message("", pygame.font.SysFont(None, 128), (255, 0, 0), (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
+        self.setup_level()
         
     def setup_level(self):
-        
-        
-        # Collision Sprites Group
 
         # Reading Tilesheet
         x_axis = 0
@@ -47,7 +44,7 @@ class Level:
                         if player_pos[0] == x_axis:
                             player_falling = False
                 elif tile == "S": # Adding the Player Spawn
-                    self.player = Player((x_axis, y_axis))
+                    self.player = Player("Player", (x_axis, y_axis))
                     self.camera_group.add(self.player)
                     player_pos = (x_axis, y_axis)
                 elif tile == "P": # Adding Platforms
@@ -62,6 +59,12 @@ class Level:
             player_pos = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
         elif player_falling:
             self.message = Message("PLAYER NOT SET PROPERLY", pygame.font.SysFont(None, 128), (255, 0, 0), (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
+
+        # Adding Player to Physics Manager
+
+        self.physics_manager.add_entity(self.player)
+
+        # print("Level Setup: NO PLAYER FOUND FOR PHYSICS MANAGER!")
 
 
 
