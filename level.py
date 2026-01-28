@@ -5,6 +5,7 @@ from settings import *
 from player import Player
 from camera import CameraGroup
 from objects import CollisionObject, Message
+from physics import PhysicsManager
 
 
 
@@ -15,16 +16,18 @@ class Level:
         
         # Sprite groups - CHAANGE: Use our new CameraGroup
         self.camera_group = CameraGroup()
+        self.collision_group = pygame.sprite.Group()
+        self.platform_group = pygame.sprite.Group()
+
         self.tilesheet = tilesheet
         self.setup_level()
+        self.physics_manager = PhysicsManager(self.player, self.collision_group, self.platform_group)
         self.message = Message("", pygame.font.SysFont(None, 128), (255, 0, 0), (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
         
     def setup_level(self):
         
         
         # Collision Sprites Group
-        self.collision_sprites = pygame.sprite.Group()
-        self.platform_group = pygame.sprite.Group()
 
         # Reading Tilesheet
         x_axis = 0
@@ -39,7 +42,7 @@ class Level:
                 if tile == "X": # Adding Collidable Walls
                     object = CollisionObject(OBJECT_LENGTH, OBJECT_HEIGHT, x_axis, y_axis)
                     self.camera_group.add(object)
-                    self.collision_sprites.add(object)
+                    self.collision_group.add(object)
                     if player_pos:
                         if player_pos[0] == x_axis:
                             player_falling = False
@@ -60,68 +63,11 @@ class Level:
         elif player_falling:
             self.message = Message("PLAYER NOT SET PROPERLY", pygame.font.SysFont(None, 128), (255, 0, 0), (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
 
-            
-
-    def horizontal_collision(self):
-        self.player.move()
-        collidable_sprites = self.collision_sprites.sprites()
-        
-        for sprite in collidable_sprites:
-            if sprite.rect.colliderect(self.player.rect):
-                if self.player.direction.x < 0: # Moving Left
-                    self.player.rect.left = sprite.rect.right
-                elif self.player.direction.x > 0: # Moving Right
-                    self.player.rect.right = sprite.rect.left
-                
-
-    def vertical_collision(self):
-        self.player.apply_gravity()
-        collidable_sprites = self.collision_sprites.sprites()
-        
-        for sprite in collidable_sprites:
-            if sprite.rect.colliderect(self.player.rect):
-                if self.player.direction.y > 0: # Falling Down
-                    self.player.rect.bottom = sprite.rect.top
-                    self.player.direction.y = 0
-                    self.player.jumps = 2 # Reset Jumps Logic
-                elif self.player.direction.y < 0: # Jumping Up
-                    self.player.rect.top = sprite.rect.bottom
-                    self.player.direction.y = 0 # Bonk head, stop moving up
-
-        for sprite in self.platform_group:
-            temp_player_bottom = pygame.Rect(self.player.rect.x, self.player.rect.bottom-1, self.player.width, 1)
-            if sprite.rect.colliderect(temp_player_bottom):
-                if self.player.direction.y > 0: # Falling Down
-                    self.player.rect.bottom = sprite.rect.top
-                    self.player.direction.y = 0
-                    self.player.jumps = 2
-            
-
-    def wall_check(self):
-        self.player.wall_hold()
-        temp_rect_left = pygame.Rect(self.player.rect.x-1, self.player.rect.y, 1,self.player.height)
-        temp_rect_right = pygame.Rect(self.player.rect.x+1, self.player.rect.y, 1,self.player.height)
-
-        for sprite in self.collision_sprites.sprites():
-            if (sprite.rect.colliderect(temp_rect_left) or sprite.rect.colliderect(temp_rect_right)) and self.player.direction.y != 0:
-                if (not self.player.on_wall):
-                    self.player.direction.y = 0
-                self.player.on_wall = True
-                return
-        self.player.on_wall = False
 
 
     def run(self):
-        # 1. Update Player (handles input, x movement)
-        self.player.jump()
+        self.physics_manager.update()
         
-        # 2. Physics & Collisions
-        # We separate axes to prevent getting stuck in corners
-        self.horizontal_collision()
-        self.vertical_collision()
-        self.wall_check()
-        
-        # 3. Draw
         self.display_surface.fill('black')
         self.camera_group.custom_draw(self.player)
         self.display_surface.blit(self.message.image, self.message.rect.topleft)
