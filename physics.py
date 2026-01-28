@@ -48,18 +48,19 @@ class PhysicsManager:
                 if entity.direction.y > 0: # Falling Down
                     entity.rect.bottom = sprite.rect.top
                     entity.direction.y = 0
-                    entity.jumps = 2 # Reset Jumps Logic
+                    if hasattr(entity, 'jumps'):
+                        entity.jumps = 2 # Reset Jumps Logic
                 elif entity.direction.y < 0: # Jumping Up
                     entity.rect.top = sprite.rect.bottom
                     entity.direction.y = 0 # Bonk head, stop moving up
 
-            for sprite in self.platform_group:
-                temp_entity_bottom = pygame.Rect(entity.rect.x, entity.rect.bottom+1, entity.width, 1)
-                if sprite.rect.colliderect(temp_entity_bottom):
-                    if entity.direction.y > 0: # Falling Down
-                        entity.rect.bottom = sprite.rect.top
-                        entity.direction.y = 0
-                        entity.jumps = 2
+        for sprite in self.platform_group:
+            temp_entity_bottom = pygame.Rect(entity.rect.x, entity.rect.bottom-1, entity.width, 1)
+            if sprite.rect.colliderect(temp_entity_bottom):
+                if entity.direction.y > 0: # Falling Down
+                    entity.rect.bottom = sprite.rect.top
+                    entity.direction.y = 0
+                    entity.jumps = 2
 
     def wall_check(self, entity):
         if not hasattr(entity, 'on_wall'):
