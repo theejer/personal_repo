@@ -7,7 +7,7 @@ from level1 import tilesheet
 pygame.init()
 pygame.font.init()
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.display.set_caption("Side Scroller")
+pygame.display.set_caption("Platformerer")
 clock = pygame.time.Clock()
 
 level = Level(tilesheet)

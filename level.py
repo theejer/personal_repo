@@ -24,6 +24,7 @@ class Level:
         
         # Collision Sprites Group
         self.collision_sprites = pygame.sprite.Group()
+        self.platform_group = pygame.sprite.Group()
 
         # Reading Tilesheet
         x_axis = 0
@@ -35,17 +36,21 @@ class Level:
         for row in self.tilesheet:
             x_axis = 0
             for tile in row:
-                if tile == "X":
+                if tile == "X": # Adding Collidable Walls
                     object = CollisionObject(OBJECT_LENGTH, OBJECT_HEIGHT, x_axis, y_axis)
                     self.camera_group.add(object)
                     self.collision_sprites.add(object)
                     if player_pos:
                         if player_pos[0] == x_axis:
                             player_falling = False
-                elif tile == "P":
+                elif tile == "S": # Adding the Player Spawn
                     self.player = Player((x_axis, y_axis))
                     self.camera_group.add(self.player)
                     player_pos = (x_axis, y_axis)
+                elif tile == "P": # Adding Platforms
+                    object = CollisionObject(OBJECT_LENGTH, OBJECT_HEIGHT, x_axis, y_axis, "white")
+                    self.camera_group.add(object)
+                    self.platform_group.add(object)
                 
                 x_axis += OBJECT_LENGTH
             y_axis += OBJECT_HEIGHT
@@ -83,12 +88,19 @@ class Level:
                     self.player.rect.top = sprite.rect.bottom
                     self.player.direction.y = 0 # Bonk head, stop moving up
 
+        for sprite in self.platform_group:
+            temp_player_bottom = pygame.Rect(self.player.rect.x, self.player.rect.bottom-1, self.player.width, 1)
+            if sprite.rect.colliderect(temp_player_bottom):
+                if self.player.direction.y > 0: # Falling Down
+                    self.player.rect.bottom = sprite.rect.top
+                    self.player.direction.y = 0
+                    self.player.jumps = 2
+            
+
     def wall_check(self):
         self.player.wall_hold()
-        temp_rect_left = pygame.Rect(self.player.rect.x-1, self.player.rect.y, 1,64)
-
-
-        temp_rect_right = pygame.Rect(self.player.rect.x+1, self.player.rect.y, 1,64)
+        temp_rect_left = pygame.Rect(self.player.rect.x-1, self.player.rect.y, 1,self.player.height)
+        temp_rect_right = pygame.Rect(self.player.rect.x+1, self.player.rect.y, 1,self.player.height)
 
         for sprite in self.collision_sprites.sprites():
             if (sprite.rect.colliderect(temp_rect_left) or sprite.rect.colliderect(temp_rect_right)) and self.player.direction.y != 0:

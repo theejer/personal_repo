@@ -3,7 +3,9 @@ import pygame
 class Player(pygame.sprite.Sprite):
     def __init__(self, pos):
         super().__init__()
-        self.image = pygame.Surface((32, 64))
+        self.width = 32
+        self.height = 64
+        self.image = pygame.Surface((self.width, self.height))
         self.image.fill('red')
         self.rect = self.image.get_rect(topleft=pos)
         
@@ -38,7 +40,7 @@ class Player(pygame.sprite.Sprite):
 
     def wall_hold(self):
         keys = pygame.key.get_pressed()
-        # Only cling if we are actualy touching a wall AND falling
+        # Only cling if we are actually touching a wall AND falling
         if (self.on_wall) and keys[pygame.K_SPACE] and self.direction.y > 0:
             self.gravity = 0.05
             self.direction.x = 0
