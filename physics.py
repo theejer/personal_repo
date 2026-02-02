@@ -8,9 +8,9 @@ class PhysicsManager:
     def update(self):
         for entity in self.entity_list:
             entity.jump()
-            self.horizontal_collision(entity)
             self.vertical_collision(entity)
-            self.wall_check(entity)
+            self.horizontal_collision(entity)
+            
 
     def add_entity(self, entity):
         try:
@@ -30,8 +30,17 @@ class PhysicsManager:
     def horizontal_collision(self, entity):
         entity.move()
         collidable_sprites = self.collision_group.sprites()
+        
+        # Reset on_wall status before checking collisions
+        if hasattr(entity, 'on_wall'):
+            entity.on_wall = False
+
         for collidable in collidable_sprites:
-            collidable.horizontal_collision(entity) 
+            collidable.horizontal_collision(entity)
+            
+        # Apply wall hold logic once after all collisions are checked
+        if hasattr(entity, 'on_wall'):
+            entity.wall_hold() 
 
     def vertical_collision(self, entity):
         entity.apply_gravity()
@@ -39,18 +48,18 @@ class PhysicsManager:
         for collidable in collidable_sprites:
             collidable.vertical_collision(entity)
 
-    def wall_check(self, entity):
-        if not hasattr(entity, 'on_wall'):
-            return
-        entity.wall_hold()
-        temp_rect_left = pygame.Rect(entity.rect.x-1, entity.rect.y, 1,entity.height)
-        temp_rect_right = pygame.Rect(entity.rect.x+1, entity.rect.y, 1,entity.height)
+    # def wall_check(self, entity):
+    #     if not hasattr(entity, 'on_wall'):
+    #         return
+    #     entity.wall_hold()
+    #     temp_rect_left = pygame.Rect(entity.rect.x-1, entity.rect.y, 1,entity.height)
+    #     temp_rect_right = pygame.Rect(entity.rect.x+1, entity.rect.y, 1,entity.height)
 
-        for sprite in self.collision_group.sprites():
-            if sprite.wall_holdable:
-                if (sprite.rect.colliderect(temp_rect_left) or sprite.rect.colliderect(temp_rect_right)) and entity.direction.y != 0:
-                    if (not entity.on_wall):
-                        entity.direction.y = 0
-                    entity.on_wall = True
-                    return
-        entity.on_wall = False
+    #     for sprite in self.collision_group.sprites():
+    #         if sprite.wall_holdable:
+    #             if (sprite.rect.colliderect(temp_rect_left) or sprite.rect.colliderect(temp_rect_right)) and entity.direction.y != 0:
+    #                 if (not entity.on_wall):
+    #                     entity.direction.y = 0
+    #                 entity.on_wall = True
+    #                 return
+    #     entity.on_wall = False

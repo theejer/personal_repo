@@ -37,5 +37,7 @@ class Player(Entity):
         if (self.on_wall) and keys[pygame.K_SPACE] and self.direction.y > 0:
             self.gravity = 0.05
             self.direction.x = 0
+            # print("WALL HOLD GRAVITY")
         else:
             self.gravity = 0.8
+            # print("NORMAL GRAVITY")

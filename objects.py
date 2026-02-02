@@ -6,7 +6,7 @@ class Collidable(pygame.sprite.Sprite):
         self.image = pygame.Surface((length, height))
         self.image.fill(color)
         self.rect = self.image.get_rect(topleft=(x, y))
-        self.wall_holdable = False
+        # self.wall_holdable = False
 
     def horizontal_collision(self, entity):
         pass
@@ -17,7 +17,7 @@ class Collidable(pygame.sprite.Sprite):
 class SolidWall(Collidable):
     def __init__(self, length, height, x, y, color='gray'):
         super().__init__(length, height, x, y, color)
-        self.wall_holdable = True
+        # self.wall_holdable = True
 
     def horizontal_collision(self, entity):
         if self.rect.colliderect(entity.rect):
@@ -25,6 +25,13 @@ class SolidWall(Collidable):
                 entity.rect.left = self.rect.right
             elif entity.direction.x > 0: # Moving Right
                 entity.rect.right = self.rect.left
+
+        if hasattr(entity, 'on_wall'):
+            temp_rect_left = pygame.Rect(entity.rect.x-1, entity.rect.y, 1,entity.height)
+            temp_rect_right = pygame.Rect(entity.rect.x+1, entity.rect.y, 1,entity.height)
+            if (self.rect.colliderect(temp_rect_left) or self.rect.colliderect(temp_rect_right)) and entity.direction.y != 0:
+                entity.on_wall = True
+                # print("ENTITY ON WALL")
 
     def vertical_collision(self, entity):
         if self.rect.colliderect(entity.rect):
@@ -41,7 +48,7 @@ class SolidWall(Collidable):
 class Platform(Collidable):
     def __init__(self, length, height, x, y, color='white'):
         super().__init__(length, height, x, y, color)
-        self.wall_holdable = False
+        # self.wall_holdable = False
 
     def vertical_collision(self, entity):
         temp_entity_bottom = pygame.Rect(entity.rect.x, entity.rect.bottom-1, entity.width, 1)
