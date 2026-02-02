@@ -1,10 +1,9 @@
 import pygame
 
 class PhysicsManager:
-    def __init__(self, collision_group, platform_group):
+    def __init__(self, collision_group):
         self.entity_list = []
         self.collision_group = collision_group
-        self.platform_group = platform_group
 
     def update(self):
         for entity in self.entity_list:
@@ -31,36 +30,14 @@ class PhysicsManager:
     def horizontal_collision(self, entity):
         entity.move()
         collidable_sprites = self.collision_group.sprites()
-        
-        for sprite in collidable_sprites:
-            if sprite.rect.colliderect(entity.rect):
-                if entity.direction.x < 0: # Moving Left
-                    entity.rect.left = sprite.rect.right
-                elif entity.direction.x > 0: # Moving Right
-                    entity.rect.right = sprite.rect.left    
+        for collidable in collidable_sprites:
+            collidable.horizontal_collision(entity) 
 
     def vertical_collision(self, entity):
         entity.apply_gravity()
         collidable_sprites = self.collision_group.sprites()
-        
-        for sprite in collidable_sprites:
-            if sprite.rect.colliderect(entity.rect):
-                if entity.direction.y > 0: # Falling Down
-                    entity.rect.bottom = sprite.rect.top
-                    entity.direction.y = 0
-                    if hasattr(entity, 'jumps'):
-                        entity.jumps = 2 # Reset Jumps Logic
-                elif entity.direction.y < 0: # Jumping Up
-                    entity.rect.top = sprite.rect.bottom
-                    entity.direction.y = 0 # Bonk head, stop moving up
-
-        for sprite in self.platform_group:
-            temp_entity_bottom = pygame.Rect(entity.rect.x, entity.rect.bottom-1, entity.width, 1)
-            if sprite.rect.colliderect(temp_entity_bottom):
-                if entity.direction.y > 0: # Falling Down
-                    entity.rect.bottom = sprite.rect.top
-                    entity.direction.y = 0
-                    entity.jumps = 2
+        for collidable in collidable_sprites:
+            collidable.vertical_collision(entity)
 
     def wall_check(self, entity):
         if not hasattr(entity, 'on_wall'):
@@ -70,9 +47,10 @@ class PhysicsManager:
         temp_rect_right = pygame.Rect(entity.rect.x+1, entity.rect.y, 1,entity.height)
 
         for sprite in self.collision_group.sprites():
-            if (sprite.rect.colliderect(temp_rect_left) or sprite.rect.colliderect(temp_rect_right)) and entity.direction.y != 0:
-                if (not entity.on_wall):
-                    entity.direction.y = 0
-                entity.on_wall = True
-                return
+            if sprite.wall_holdable:
+                if (sprite.rect.colliderect(temp_rect_left) or sprite.rect.colliderect(temp_rect_right)) and entity.direction.y != 0:
+                    if (not entity.on_wall):
+                        entity.direction.y = 0
+                    entity.on_wall = True
+                    return
         entity.on_wall = False

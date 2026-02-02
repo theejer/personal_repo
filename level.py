@@ -4,7 +4,7 @@ import pygame
 from settings import *
 from player import Player
 from camera import CameraGroup
-from objects import CollisionObject, Message
+from objects import Platform, SolidWall, Message
 from physics import PhysicsManager
 
 
@@ -17,10 +17,9 @@ class Level:
         # Sprite groups - CHAANGE: Use our new CameraGroup
         self.camera_group = CameraGroup()
         self.collision_group = pygame.sprite.Group()
-        self.platform_group = pygame.sprite.Group()
 
         self.tilesheet = tilesheet
-        self.physics_manager = PhysicsManager(self.collision_group, self.platform_group)
+        self.physics_manager = PhysicsManager(self.collision_group)
         self.message = Message("", pygame.font.SysFont(None, 128), (255, 0, 0), (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
         self.setup_level()
         
@@ -37,7 +36,7 @@ class Level:
             x_axis = 0
             for tile in row:
                 if tile == "X": # Adding Collidable Walls
-                    object = CollisionObject(OBJECT_LENGTH, OBJECT_HEIGHT, x_axis, y_axis)
+                    object = SolidWall(OBJECT_LENGTH, OBJECT_HEIGHT, x_axis, y_axis)
                     self.camera_group.add(object)
                     self.collision_group.add(object)
                     if player_pos:
@@ -48,9 +47,9 @@ class Level:
                     self.camera_group.add(self.player)
                     player_pos = (x_axis, y_axis)
                 elif tile == "P": # Adding Platforms
-                    object = CollisionObject(OBJECT_LENGTH, OBJECT_HEIGHT, x_axis, y_axis, "white")
+                    object = Platform(OBJECT_LENGTH, OBJECT_HEIGHT, x_axis, y_axis, "white")
                     self.camera_group.add(object)
-                    self.platform_group.add(object)
+                    self.collision_group.add(object)
                 
                 x_axis += OBJECT_LENGTH
             y_axis += OBJECT_HEIGHT
